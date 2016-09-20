@@ -1,0 +1,18 @@
+{% load i18n %}
+{% verbatim %}
+<script id="topics_list_item" type="text/x-handlebars-template"> 
+    <li class="cursor-pointer hover-white"><a onclick="app.changetab(this)" href="#topic-{{id}}">{{name}}</a></li>
+</script>
+<script id="topics_feeds_tabs_item" type="text/x-handlebars-template">
+  <div class="tab-pane" id="topic-{{id}}">
+    <div class="topics_feeds_header pd-15">
+      <span class="topic_name">
+      #{{name}}
+      </span>
+    </div>
+    <div class="inputform pd-15">
+      <input onkeydown="app.checkinputtext(this, event, {{id}})" class="form-control text-enter-field-js" type="text">
+    </div>
+  </div>
+</script>
+{% endverbatim %}

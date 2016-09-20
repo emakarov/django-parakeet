@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'channels',
     'djparakeet',
     'tastypie',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [

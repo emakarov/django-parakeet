@@ -1,12 +1,29 @@
-var Backbone = require('backbone')
 var app = {}
 app.collections = {}
 var Parakeet = require('./parakeet.js')
-var $ = require('jquery')
+var $ = require('jquery');
+window.jQuery = $;
 Handlebars = require('handlebars');
+require('bootstrap');
 
 var topicurl = '/parakeet/api/v1/djparakeet/topic/';
 var settings = {}
+var PSocket = require('./parakeet-socket.js');
+
+app.socket = PSocket({
+    uri: "ws://" + window.location.host + "/chat/?session_key="+window.django.session_key,
+    onmessage: function(data) {
+        console.log('received from ws clean', data);
+        var json_data = JSON.parse(data);
+        if (json_data.kind == "topic_message"){
+            var m = JSON.parse(json_data.data.message);
+            console.log(m);
+        }
+    },
+    onopen: function(data){
+        console.log('socket is opened', data);
+    } 
+});
 
 settings.collections = {
   'topics': {
@@ -19,10 +36,18 @@ settings.collections = {
         grid: Parakeet.Grid,
         config: {
           cell: Parakeet.Cell,
-          cellTemplate: Handlebars.compile('{{name}}'),
-          typical: true,
-          name: 'topics_left_table',
+          cellTemplate: Handlebars.compile('<li class="cursor-pointer hover-white"><a onclick="app.changetab(this)" href="#topic-{{id}}">{{name}}</a></li>'),
+          name: 'topics_list',
           holder: $('#topics_holder')
+        }
+      },
+      1: {
+        grid: Parakeet.Grid,
+        config: {
+          cell: Parakeet.Cell,
+          cellTemplate: Handlebars.compile( $('#topics_feeds_tabs_item').html() ),
+          name: 'topics_feeds_tabs',
+          holder: $('#topics_feeds_holder')
         }
       }
     }
@@ -44,6 +69,22 @@ for (var i in settings.collections) {
 
 for (var i in app.collections){
     app.collections[i].fetch();
+}
+
+app.checkinputtext = function (elem, e, topic_id){
+  if(e.keyCode == 13){
+    var val = $(elem).val();
+    var data = {
+       topic_id: topic_id,
+       kind: 'post',
+       msg: val
+    }
+    app.socket.send(data);
+  }
+}
+
+app.changetab = function(e) {
+  $(e).tab('show');
 }
 
 app.settings = settings;

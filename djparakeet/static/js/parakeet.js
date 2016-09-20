@@ -208,14 +208,17 @@ Parakeet.Cell = Backbone.View.extend({
 
   render: function (options) {
     if (this.element === undefined){
-      this.element = $('<div>' + this.getHtml() + '</div>');
+      this.element = $(this.getHtml());
       if (!options.prepend) {
         this.grid.holder.append(this.element);
       } else {
         this.grid.holder.prepend(this.element);
       }
     } else {
-      this.element.html(this.getHtml());
+      var h = this.getHtml()
+      var elem = $(h)
+      this.element.replaceWith(h);
+      this.element = elem;
     }
 
     try {
