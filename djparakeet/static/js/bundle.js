@@ -292,10 +292,13 @@ Parakeet.Cell = Backbone.View.extend({
       }
     } catch (e) {}
 
+    this.postRender();
     return this
   },
   remove: function () {
     this.grid.holder.remove(this.element)
+  },
+  postRender: function(){
   }
 });
 
@@ -303,8 +306,12 @@ Parakeet.ConnectedCell = Parakeet.Cell.extend({
 
   getHolder: function(){
     return $(this.grid.holder_id);
+  },
+  postRender: function(){
+    var hol = $( this.getHolder() );
+    var h = hol.height();
+    hol.animate({scrollTop: h});
   }
-
 });
 
 
