@@ -6,7 +6,10 @@ window.jQuery = $;
 Handlebars = require('handlebars');
 require('bootstrap');
 
-var topicurl = '/parakeet/api/v1/djparakeet/topic/';
+var base_api_url = '/parakeet/api/v1';
+var topicurl = base_api_url + '/djparakeet/topic/';
+var messageurl = base_api_url + '/djparakeet/message/';
+
 var settings = {}
 var PSocket = require('./parakeet-socket.js');
 
@@ -18,6 +21,9 @@ app.socket = PSocket({
         if (json_data.kind == "topic_message"){
             var m = JSON.parse(json_data.data.message);
             console.log(m);
+            console.log(json_data);
+            var t = app.collections['topics'].where({id: json_data.data.topic_id})[0];
+            t.connectedCollection.add(m);
         }
     },
     onopen: function(data){
@@ -27,10 +33,9 @@ app.socket = PSocket({
 
 settings.collections = {
   'topics': {
-    model: Parakeet.Model,
+    model: Parakeet.ModelWithConnectedCollection,
     urlRoot: topicurl,
     collection:  Parakeet.Collection,
-    events_tag: 'topics',
     views: {
       0: {
         grid: Parakeet.Grid,
@@ -50,15 +55,31 @@ settings.collections = {
           holder: $('#topics_feeds_holder')
         }
       }
+    },
+    connectedViews: {
+      0: {
+         grid: Parakeet.ConnectedGrid,
+         config: {
+           cell: Parakeet.ConnectedCell,
+           cellTemplate: Handlebars.compile('<div class="col-xs-12">{{text}}</div>'),
+           holder_id: Handlebars.compile("#topic-{{id}}-messages")
+         }
+      }
     }
+  },
+  'messages': {
+    model: Parakeet.Model,
+    urlRoot: messageurl,
+    collection:  Parakeet.Collection
   }
 }
 
 for (var i in settings.collections) {
     var cs = settings.collections[i];
     var collection = new (cs.collection.extend({
-      urlRoot: cs.urlRoot,
-      model: cs.model
+        urlRoot: cs.urlRoot,
+        model: cs.model,
+        connectedViews: cs.connectedViews
     }))();
     app.collections[i] = collection;
     app.collections[i].views = {};
@@ -89,3 +110,4 @@ app.changetab = function(e) {
 
 app.settings = settings;
 window.app = app;
+window.$ = $;

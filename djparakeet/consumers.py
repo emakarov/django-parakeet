@@ -8,7 +8,7 @@ from channels.sessions import channel_session
 from channels.auth import http_session_user, channel_session_user, channel_session_user_from_http
 
 from .models import Topic, Message
-from .api import TopicResource
+from .api import TopicResource, MessageResource
 
 DEFAULT_CONNECT_GROUPS = ['topic_change', 'topic_message', 'ping']
 
@@ -56,7 +56,7 @@ def ws_message(message):
             text=data['msg'],
             author=message.user
         )
-        tr = TopicResource()
+        tr = MessageResource()
         bundle = tr.build_bundle(obj=msg)
         data_bundle = tr.full_dehydrate(bundle)
         data_json = tr.serialize(None, data_bundle, 'application/json')

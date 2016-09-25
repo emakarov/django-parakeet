@@ -4,13 +4,17 @@ from tastypie import fields
 from tastypie.resources import ModelResource, ALL, ALL_WITH_RELATIONS
 from tastypie.api import Api
 
-from .models import Topic
+from .models import Topic, Message
 
 class TopicResource(ModelResource):
     class Meta:
         queryset = Topic.objects.all()
         resource_name = 'djparakeet/topic'
 
+class MessageResource(ModelResource):
+    class Meta:
+        queryset = Message.objects.all()
+        resource_name = 'djparakeet/message'
 
 clsmembers = inspect.getmembers(sys.modules[__name__], lambda member: inspect.isclass(member) and member.__module__ == __name__)
 api_v1 = Api(api_name='v1')

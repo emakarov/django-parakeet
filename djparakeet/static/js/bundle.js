@@ -38,10 +38,23 @@ var Backbone = require('backbone');
 var $ = require('jquery');
 var moment   = require('moment');
 var _ = require('underscore');
+var Handlebars = require('handlebars');
 
 var Parakeet = {
   defaultLimit: 20
 }
+
+Parakeet.LocalModel = Backbone.Model.extend({
+   fetch: function(){},
+   sync: function(){},
+   url: function(){}
+});
+
+Parakeet.LocalCollection = Backbone.Collection.extend({
+   fetch: function(){},
+   sync: function(){},
+   url: function(){}
+});
 
 Parakeet.Model = Backbone.Model.extend({
   idAttribute: 'resource_uri',
@@ -59,6 +72,18 @@ Parakeet.Model = Backbone.Model.extend({
       return this.get('id');
     }
     return _.chain(this.get('resource_uri').split('/')).compact().last().value();
+  }
+});
+
+Parakeet.ModelWithConnectedCollection = Parakeet.Model.extend({
+  initialize: function (options) {
+    Parakeet.Model.prototype.initialize.apply(this, arguments);
+    this.connectedCollection = new Parakeet.LocalCollection();
+    this.connectedViews = this.collection.connectedViews;
+    this.grids = {};
+    for (var i=0 in this.connectedViews) {
+        this.grids[i] = new this.connectedViews[i].grid(this, this.connectedViews[i].config);
+    }
   }
 });
 
@@ -231,8 +256,8 @@ Parakeet.Collection = Backbone.Collection.extend({
 
 Parakeet.Cell = Backbone.View.extend({
   initialize: function (model, options) {
-    this.model = model
-    this.grid = options.grid
+    this.model = model;
+    this.grid = options.grid;
     this.template = options.grid.cellTemplate;
     this.listenTo(this.model, 'change', this.render)
     this.render(options);
@@ -242,13 +267,17 @@ Parakeet.Cell = Backbone.View.extend({
     return this.template(this.model.attributes)
   },
 
+  getHolder: function(){
+    return this.grid.holder;
+  },
+
   render: function (options) {
     if (this.element === undefined){
       this.element = $(this.getHtml());
       if (!options.prepend) {
-        this.grid.holder.append(this.element);
+        this.getHolder().append(this.element);
       } else {
-        this.grid.holder.prepend(this.element);
+        this.getHolder().prepend(this.element);
       }
     } else {
       var h = this.getHtml()
@@ -268,6 +297,14 @@ Parakeet.Cell = Backbone.View.extend({
   remove: function () {
     this.grid.holder.remove(this.element)
   }
+});
+
+Parakeet.ConnectedCell = Parakeet.Cell.extend({
+
+  getHolder: function(){
+    return $(this.grid.holder_id);
+  }
+
 });
 
 
@@ -299,11 +336,26 @@ Parakeet.Grid = Backbone.View.extend({
     }
     this.views.remove(v);
   }
-})
+});
+
+Parakeet.ConnectedGrid = Parakeet.Grid.extend({
+  initialize: function (model, options) {
+    this.model = model;
+    this.options = options;
+    this.collection = model.connectedCollection;
+    console.log(options.holder_id({id: this.model.attributes.id}));
+    this.holder_id = options.holder_id({id: this.model.attributes.id});
+    this.cell = options.cell;
+    this.cellTemplate = options.cellTemplate;
+    this.listenTo(this.collection, 'add', this.onAdd);
+    this.listenTo(this.collection, 'remove', this.onRemove);
+    this.views = new Backbone.Collection();
+  }
+});
 
 module.exports = Parakeet;
 
-},{"backbone":4,"jquery":61,"moment":62,"underscore":64}],3:[function(require,module,exports){
+},{"backbone":4,"handlebars":48,"jquery":61,"moment":62,"underscore":64}],3:[function(require,module,exports){
 var app = {}
 app.collections = {}
 var Parakeet = require('./parakeet.js')
@@ -312,7 +364,10 @@ window.jQuery = $;
 Handlebars = require('handlebars');
 require('bootstrap');
 
-var topicurl = '/parakeet/api/v1/djparakeet/topic/';
+var base_api_url = '/parakeet/api/v1';
+var topicurl = base_api_url + '/djparakeet/topic/';
+var messageurl = base_api_url + '/djparakeet/message/';
+
 var settings = {}
 var PSocket = require('./parakeet-socket.js');
 
@@ -324,6 +379,9 @@ app.socket = PSocket({
         if (json_data.kind == "topic_message"){
             var m = JSON.parse(json_data.data.message);
             console.log(m);
+            console.log(json_data);
+            var t = app.collections['topics'].where({id: json_data.data.topic_id})[0];
+            t.connectedCollection.add(m);
         }
     },
     onopen: function(data){
@@ -333,10 +391,9 @@ app.socket = PSocket({
 
 settings.collections = {
   'topics': {
-    model: Parakeet.Model,
+    model: Parakeet.ModelWithConnectedCollection,
     urlRoot: topicurl,
     collection:  Parakeet.Collection,
-    events_tag: 'topics',
     views: {
       0: {
         grid: Parakeet.Grid,
@@ -356,15 +413,31 @@ settings.collections = {
           holder: $('#topics_feeds_holder')
         }
       }
+    },
+    connectedViews: {
+      0: {
+         grid: Parakeet.ConnectedGrid,
+         config: {
+           cell: Parakeet.ConnectedCell,
+           cellTemplate: Handlebars.compile('<div class="col-xs-12">{{text}}</div>'),
+           holder_id: Handlebars.compile("#topic-{{id}}-messages")
+         }
+      }
     }
+  },
+  'messages': {
+    model: Parakeet.Model,
+    urlRoot: messageurl,
+    collection:  Parakeet.Collection
   }
 }
 
 for (var i in settings.collections) {
     var cs = settings.collections[i];
     var collection = new (cs.collection.extend({
-      urlRoot: cs.urlRoot,
-      model: cs.model
+        urlRoot: cs.urlRoot,
+        model: cs.model,
+        connectedViews: cs.connectedViews
     }))();
     app.collections[i] = collection;
     app.collections[i].views = {};
@@ -395,6 +468,7 @@ app.changetab = function(e) {
 
 app.settings = settings;
 window.app = app;
+window.$ = $;
 
 },{"./parakeet-socket.js":1,"./parakeet.js":2,"bootstrap":6,"handlebars":48,"jquery":61}],4:[function(require,module,exports){
 (function (global){

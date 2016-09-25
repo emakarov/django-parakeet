@@ -2,10 +2,23 @@ var Backbone = require('backbone');
 var $ = require('jquery');
 var moment   = require('moment');
 var _ = require('underscore');
+var Handlebars = require('handlebars');
 
 var Parakeet = {
   defaultLimit: 20
 }
+
+Parakeet.LocalModel = Backbone.Model.extend({
+   fetch: function(){},
+   sync: function(){},
+   url: function(){}
+});
+
+Parakeet.LocalCollection = Backbone.Collection.extend({
+   fetch: function(){},
+   sync: function(){},
+   url: function(){}
+});
 
 Parakeet.Model = Backbone.Model.extend({
   idAttribute: 'resource_uri',
@@ -23,6 +36,18 @@ Parakeet.Model = Backbone.Model.extend({
       return this.get('id');
     }
     return _.chain(this.get('resource_uri').split('/')).compact().last().value();
+  }
+});
+
+Parakeet.ModelWithConnectedCollection = Parakeet.Model.extend({
+  initialize: function (options) {
+    Parakeet.Model.prototype.initialize.apply(this, arguments);
+    this.connectedCollection = new Parakeet.LocalCollection();
+    this.connectedViews = this.collection.connectedViews;
+    this.grids = {};
+    for (var i=0 in this.connectedViews) {
+        this.grids[i] = new this.connectedViews[i].grid(this, this.connectedViews[i].config);
+    }
   }
 });
 
@@ -195,8 +220,8 @@ Parakeet.Collection = Backbone.Collection.extend({
 
 Parakeet.Cell = Backbone.View.extend({
   initialize: function (model, options) {
-    this.model = model
-    this.grid = options.grid
+    this.model = model;
+    this.grid = options.grid;
     this.template = options.grid.cellTemplate;
     this.listenTo(this.model, 'change', this.render)
     this.render(options);
@@ -206,13 +231,17 @@ Parakeet.Cell = Backbone.View.extend({
     return this.template(this.model.attributes)
   },
 
+  getHolder: function(){
+    return this.grid.holder;
+  },
+
   render: function (options) {
     if (this.element === undefined){
       this.element = $(this.getHtml());
       if (!options.prepend) {
-        this.grid.holder.append(this.element);
+        this.getHolder().append(this.element);
       } else {
-        this.grid.holder.prepend(this.element);
+        this.getHolder().prepend(this.element);
       }
     } else {
       var h = this.getHtml()
@@ -232,6 +261,14 @@ Parakeet.Cell = Backbone.View.extend({
   remove: function () {
     this.grid.holder.remove(this.element)
   }
+});
+
+Parakeet.ConnectedCell = Parakeet.Cell.extend({
+
+  getHolder: function(){
+    return $(this.grid.holder_id);
+  }
+
 });
 
 
@@ -263,6 +300,21 @@ Parakeet.Grid = Backbone.View.extend({
     }
     this.views.remove(v);
   }
-})
+});
+
+Parakeet.ConnectedGrid = Parakeet.Grid.extend({
+  initialize: function (model, options) {
+    this.model = model;
+    this.options = options;
+    this.collection = model.connectedCollection;
+    console.log(options.holder_id({id: this.model.attributes.id}));
+    this.holder_id = options.holder_id({id: this.model.attributes.id});
+    this.cell = options.cell;
+    this.cellTemplate = options.cellTemplate;
+    this.listenTo(this.collection, 'add', this.onAdd);
+    this.listenTo(this.collection, 'remove', this.onRemove);
+    this.views = new Backbone.Collection();
+  }
+});
 
 module.exports = Parakeet;
