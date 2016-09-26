@@ -3,6 +3,7 @@ var $ = require('jquery');
 var moment   = require('moment');
 var _ = require('underscore');
 var Handlebars = require('handlebars');
+var inview     = require('./plugins/jquery.inview.js')
 
 var Parakeet = {
   defaultLimit: 20
@@ -17,7 +18,17 @@ Parakeet.LocalModel = Backbone.Model.extend({
 Parakeet.LocalCollection = Backbone.Collection.extend({
    fetch: function(){},
    sync: function(){},
-   url: function(){}
+   url: function(){},
+   addToBottom: function(m) {
+     this.add(m);
+   },
+   addToTop: function(m) {
+     this.add(m, {prepend:true});
+   },
+   addToTopObjects: function(c){
+     console.log('add to top objects');
+     this.trigger('addObjects', {objects: c, prepend: true});
+   }
 });
 
 Parakeet.Model = Backbone.Model.extend({
@@ -48,6 +59,27 @@ Parakeet.ModelWithConnectedCollection = Parakeet.Model.extend({
     for (var i=0 in this.connectedViews) {
         this.grids[i] = new this.connectedViews[i].grid(this, this.connectedViews[i].config);
     }
+  }
+});
+
+Parakeet.TopicModel = Parakeet.ModelWithConnectedCollection.extend({
+  loadPrevHistory: function(){
+    var that = this;
+    var mid = '';
+    var postrender = true;
+    if (this.connectedCollection.models.length > 0) {
+      var model = this.connectedCollection.min(function(m){
+         return m.get('id');
+      });
+      mid = '&id__lt=' + model.attributes.id;
+      postrender = false;
+    } 
+    $.get('/parakeet/api/v1/djparakeet/message/?format=json&limit=20'+mid+'&topic='+this.attributes.id, function(data) {
+       that.connectedCollection.addToTopObjects(data.objects);
+       if (postrender) {
+         that.connectedCollection.trigger('postRender');
+       }
+    });
   }
 });
 
@@ -225,6 +257,7 @@ Parakeet.Cell = Backbone.View.extend({
     this.template = options.grid.cellTemplate;
     this.listenTo(this.model, 'change', this.render)
     this.render(options);
+    this.listenTo(this.model.collection, 'postRender', this.postRender);
   },
 
   getHtml: function () {
@@ -241,7 +274,12 @@ Parakeet.Cell = Backbone.View.extend({
       if (!options.prepend) {
         this.getHolder().append(this.element);
       } else {
+        var firstMsg = this.getHolder().find('div:first')
         this.getHolder().prepend(this.element);
+        try {
+        console.log('top', firstMsg.offset().top);
+        this.getWrapper().scrollTop(firstMsg.offset().top);
+        } catch (e) {}
       }
     } else {
       var h = this.getHtml()
@@ -256,8 +294,7 @@ Parakeet.Cell = Backbone.View.extend({
       }
     } catch (e) {}
 
-    this.postRender();
-    return this
+    return this;
   },
   remove: function () {
     this.grid.holder.remove(this.element)
@@ -266,15 +303,45 @@ Parakeet.Cell = Backbone.View.extend({
   }
 });
 
-Parakeet.ConnectedCell = Parakeet.Cell.extend({
+Parakeet.TopicFeedCell = Parakeet.Cell.extend({
+  initialize: function (model, options) {
+    this.model = model;
+    this.grid = options.grid;
+    this.template = options.grid.cellTemplate;
+    this.listenTo(this.model, 'change', this.render)
+    this.render(options);
+    this.listenTo(this.model.collection, 'postRender', this.postRender);
+    this.postRender();
+  },
+  postRender: function(){
+    this.bindNewLoad();  
+  },
+  bindNewLoad: function() {
+    console.log('bindnewload');
+    if (this.newpage_element === undefined){
+      this.newpage_element = $("#topic-"+this.model.attributes.id+"-premessage");
+    }
+    var that = this;
+    this.newpage_element.on('inview', function (event, isInView) {
+      console.log('innview',isInView);
+      if (isInView) {
+        that.model.loadPrevHistory();
+      }
+    });
+  }
+});
 
+Parakeet.ConnectedCell = Parakeet.Cell.extend({
   getHolder: function(){
     return $(this.grid.holder_id);
+  },
+  getWrapper: function(){
+    return $(this.grid.wrapper_id);
   },
   postRender: function(){
     var hol = $( this.getHolder() );
     var h = hol.height();
-    hol.animate({scrollTop: h});
+  //  hol.animate({scrollTop: h});
   }
 });
 
@@ -289,11 +356,18 @@ Parakeet.Grid = Backbone.View.extend({
     this.listenTo(this.collection, 'add', this.onAdd);
     this.listenTo(this.collection, 'remove', this.onRemove);
     this.views = new Backbone.Collection();
+    this.afterInit();
+    this.listenTo(this.collection, 'addObjects', this.onAddObjects);
   },
-  onAdd: function (m) {
+  onAdd: function (m, collection, attrs) {
+    console.log('onadd', m, attrs);
+    var prepend = false;
+    if (attrs.prepend != undefined) {
+      prepend = attrs.prepend;
+    }
     var v = new this.cell(m, {
       grid: this,
-      prepend: false
+      prepend: prepend
     })
     this.views.add(v);
   },
@@ -306,6 +380,24 @@ Parakeet.Grid = Backbone.View.extend({
       v.attributes.element.remove();
     }
     this.views.remove(v);
+  },
+  afterInit: function(){},
+  getWrapper: function(){
+    return $(this.wrapper_id);
+  },
+  getHolder: function(){
+    return $(this.holder_id);
+  },
+  onAddObjects: function(attrs){
+      console.log('onaddobj', attrs)
+      var firstMsg = this.getHolder().find('div:first')
+      for (m in attrs.objects){
+        this.collection.addToTop(attrs.objects[m]);
+      }
+      try {
+        console.log('top', firstMsg.offset().top);
+        this.getWrapper().scrollTop(firstMsg.offset().top);
+      } catch (e) {}
   }
 });
 
@@ -314,12 +406,13 @@ Parakeet.ConnectedGrid = Parakeet.Grid.extend({
     this.model = model;
     this.options = options;
     this.collection = model.connectedCollection;
-    console.log(options.holder_id({id: this.model.attributes.id}));
     this.holder_id = options.holder_id({id: this.model.attributes.id});
+    this.wrapper_id = options.wrapper_id({id: this.model.attributes.id});
     this.cell = options.cell;
     this.cellTemplate = options.cellTemplate;
     this.listenTo(this.collection, 'add', this.onAdd);
     this.listenTo(this.collection, 'remove', this.onRemove);
+    this.listenTo(this.collection, 'addObjects', this.onAddObjects);
     this.views = new Backbone.Collection();
   }
 });

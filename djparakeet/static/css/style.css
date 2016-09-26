@@ -1236,7 +1236,7 @@
   overflow-y: auto; }
 
 .premessage {
-  height: calc(100vh - 180px); }
+  height: 20px; }
 
 .menuleft {
   background: #3e313c;

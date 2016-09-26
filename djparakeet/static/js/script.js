@@ -23,7 +23,8 @@ app.socket = PSocket({
             console.log(m);
             console.log(json_data);
             var t = app.collections['topics'].where({id: json_data.data.topic_id})[0];
-            t.connectedCollection.add(m);
+            t.connectedCollection.addToBottom(m);
+            t.connectedCollection.trigger('postRender');
         }
     },
     onopen: function(data){
@@ -33,7 +34,7 @@ app.socket = PSocket({
 
 settings.collections = {
   'topics': {
-    model: Parakeet.ModelWithConnectedCollection,
+    model: Parakeet.TopicModel,
     urlRoot: topicurl,
     collection:  Parakeet.Collection,
     views: {
@@ -41,7 +42,7 @@ settings.collections = {
         grid: Parakeet.Grid,
         config: {
           cell: Parakeet.Cell,
-          cellTemplate: Handlebars.compile('<li class="cursor-pointer hover-white"><a onclick="app.changetab(this)" href="#topic-{{id}}">{{name}}</a></li>'),
+          cellTemplate: Handlebars.compile( $('#topics_list_item').html() ),
           name: 'topics_list',
           holder: $('#topics_holder')
         }
@@ -49,7 +50,7 @@ settings.collections = {
       1: {
         grid: Parakeet.Grid,
         config: {
-          cell: Parakeet.Cell,
+          cell: Parakeet.TopicFeedCell,
           cellTemplate: Handlebars.compile( $('#topics_feeds_tabs_item').html() ),
           name: 'topics_feeds_tabs',
           holder: $('#topics_feeds_holder')
@@ -61,8 +62,9 @@ settings.collections = {
          grid: Parakeet.ConnectedGrid,
          config: {
            cell: Parakeet.ConnectedCell,
-           cellTemplate: Handlebars.compile('<div class="col-xs-12">{{text}}</div>'),
-           holder_id: Handlebars.compile("#topic-{{id}}-messages")
+           cellTemplate: Handlebars.compile( $('#message_content').html() ),
+           holder_id: Handlebars.compile("#topic-{{id}}-messages"),
+           wrapper_id: Handlebars.compile("#topic-{{id}}-messages-wrapper")
          }
       }
     }

@@ -1,7 +1,7 @@
 {% load i18n %}
 {% verbatim %}
 <script id="topics_list_item" type="text/x-handlebars-template"> 
-    <li class="cursor-pointer hover-white"><a onclick="app.changetab(this)" href="#topic-{{id}}">{{name}}</a></li>
+    <li class="cursor-pointer hover-white"><a onclick="app.changetab(this)" href="#topic-{{id}}"># {{name}}</a></li>
 </script>
 <script id="topics_feeds_tabs_item" type="text/x-handlebars-template">
   <div class="tab-pane" id="topic-{{id}}">
@@ -10,10 +10,20 @@
       #{{name}}
       </span>
     </div>
-    <div class="topics_feeds_messages" id="topic-{{id}}-messages"><div class="premessage"></div></div>
+    <div class="topics_feeds_messages" id="topic-{{id}}-messages-wrapper">
+       <div id="topic-{{id}}-premessage" class="premessage"></div>
+       <div id="topic-{{id}}-messages">
+       </div> 
+    </div>
     <div class="inputform pd-15">
       <input onkeydown="app.checkinputtext(this, event, {{id}})" class="form-control text-enter-field-js" type="text">
     </div>
   </div>
+</script>
+<script id="message_content" type="text/x-handlebars-template">
+<div class="col-xs-12 pd-l-20 pt-5">
+<div>{{id}}<b>{{author.username}}</b></div>
+<div>{{text}}</div>
+</div>
 </script>
 {% endverbatim %}
