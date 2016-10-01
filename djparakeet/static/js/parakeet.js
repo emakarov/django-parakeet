@@ -21,9 +21,13 @@ Parakeet.LocalCollection = Backbone.Collection.extend({
    url: function(){},
    addToBottom: function(m) {
      this.add(m);
+     this.trigger('scrollLast', this);
    },
    addToTop: function(m) {
      this.add(m, {prepend:true});
+     if (this.models.length == 1){
+      this.trigger('scrollLast', this);
+     }
    },
    addToTopObjects: function(c){
      console.log('add to top objects');
@@ -258,6 +262,7 @@ Parakeet.Cell = Backbone.View.extend({
     this.listenTo(this.model, 'change', this.render)
     this.render(options);
     this.listenTo(this.model.collection, 'postRender', this.postRender);
+    this.listenTo(this.model.collection, 'scrollLast', this.scrollLast);
   },
 
   getHtml: function () {
@@ -278,7 +283,7 @@ Parakeet.Cell = Backbone.View.extend({
         this.getHolder().prepend(this.element);
         try {
         console.log('top', firstMsg.offset().top);
-        this.getWrapper().scrollTop(firstMsg.offset().top);
+        this.getWrapper().scrollTop(firstMsg.offset().top - 800 - 22);
         } catch (e) {}
       }
     } else {
@@ -295,6 +300,11 @@ Parakeet.Cell = Backbone.View.extend({
     } catch (e) {}
 
     return this;
+  },
+  scrollLast: function(){
+    console.log('scrolling bottom');
+    var firstMsg = this.getHolder().find('div:last')
+    this.getWrapper().scrollTop(firstMsg.offset().top + 1500);
   },
   remove: function () {
     this.grid.holder.remove(this.element)
@@ -395,8 +405,13 @@ Parakeet.Grid = Backbone.View.extend({
         this.collection.addToTop(attrs.objects[m]);
       }
       try {
-        console.log('top', firstMsg.offset().top);
-        this.getWrapper().scrollTop(firstMsg.offset().top);
+      console.log('onaddobj tcml', this.collection.models.length);
+        if (this.collection.models.length > Parakeet.defaultLimit) {
+            console.log('top', firstMsg.offset().top);
+            this.getWrapper().scrollTop(firstMsg.offset().top);
+        } else {
+            this.collection.trigger('scrollLast', this.collection);
+        }
       } catch (e) {}
   }
 });

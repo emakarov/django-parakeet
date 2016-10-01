@@ -24,7 +24,7 @@ app.socket = PSocket({
             console.log(json_data);
             var t = app.collections['topics'].where({id: json_data.data.topic_id})[0];
             t.connectedCollection.addToBottom(m);
-            t.connectedCollection.trigger('postRender');
+           // t.connectedCollection.trigger('postRender');
         }
     },
     onopen: function(data){
