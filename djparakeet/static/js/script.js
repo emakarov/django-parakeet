@@ -85,12 +85,17 @@ for (var i in settings.collections) {
     }))();
     app.collections[i] = collection;
     app.collections[i].views = {};
-    for (var v in cs.views) {
+    for (let v in cs.views) {
         app.collections[i].views[v] = new cs.views[v].grid(collection, cs.views[v].config)
     }
 }
 
-for (var i in app.collections){
+app.collections['topics'].listenTo(app.collections['topics'], 'fetch_completed', function() {
+    $("#topics_holder").find('li:first>a').trigger('click');
+})
+
+
+for (let i in app.collections){
     app.collections[i].fetch();
 }
 
@@ -109,6 +114,12 @@ app.checkinputtext = function (elem, e, topic_id){
 app.changetab = function(e) {
   $(e).tab('show');
 }
+
+$(document).ready( function() {
+  $("#add_channel_button").on('click', function() {
+    $("#add_channel_modal").modal();
+  });
+});
 
 app.settings = settings;
 window.app = app;

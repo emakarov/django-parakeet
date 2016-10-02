@@ -6,8 +6,9 @@
 <body>
 <div>
   <div class="col-xs-4 col-md-2 fh menuleft">
+    <div id="username_holder" class="pd-t-10">{{request.user.username}}</div>
     <div id="topics_wrapper" class="pd-t-10">
-      <span class="pull-right"><h5>Add</h5></span>
+      <span class="cursor-pointer pull-right white-color-hovered" id="add_channel_button"><h5>Add</h5></span>
       <h5>Channels</h5> 
     <ul id="topics_holder" class="nav nav-pills nav-stacked pd-10">
     </ul>
@@ -18,6 +19,8 @@
     </div>
   </div>
 </div>
+</div>
+{% include 'djparakeet/modals.html' %}
 {% include 'djparakeet/handlebars.html' %}
 <script>
   window.django = {};

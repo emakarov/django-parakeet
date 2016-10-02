@@ -1,0 +1,19 @@
+{% load i18n %}
+<div id="add_channel_modal" class="modal fade" tabindex="-1" role="dialog">
+<div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">{% trans "Create a channel" %}</h4>
+      </div>
+      <div class="modal-body">
+        <input class="form-control text-enter-field-js" type="text" placeholder="{% trans "Please fill a channel name" %}">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
+        <button type="button" class="btn btn-primary">{% trans "Create channel" %}</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div>
+</div>

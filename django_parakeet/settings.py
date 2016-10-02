@@ -130,3 +130,6 @@ CHANNEL_LAYERS = {
         "ROUTING": "django_parakeet.routing.channel_routing",
     },
 }
+
+LOGIN_URL = '/admin/'
+

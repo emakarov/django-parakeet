@@ -1263,4 +1263,7 @@
   font-weight: 900;
   font-size: 16px; }
 
+.white-color-hovered:hover {
+  color: #fff; }
+
 /*# sourceMappingURL=style.css.map */
