@@ -5,6 +5,20 @@ var _ = require('underscore');
 var Handlebars = require('handlebars');
 var inview     = require('./plugins/jquery.inview.js')
 
+    // Helper function from Backbone to get a value from a Backbone
+    // object as a property or as a function.
+    var getValue = function(object, prop) {
+        if ((object && object[prop]))
+            return _.isFunction(object[prop]) ? object[prop]() : object[prop];
+    };
+
+    // Helper function from Backbone that raises error when a model's
+    // url cannot be determined.
+    var urlError = function() {
+        throw new Error('A "url" property or function must be specified');
+    };
+
+
 var Parakeet = {
   defaultLimit: 20
 }

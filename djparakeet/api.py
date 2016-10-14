@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from tastypie import fields
 from tastypie.resources import ModelResource, ALL, ALL_WITH_RELATIONS
 from tastypie.api import Api
+from tastypie.authorization import DjangoAuthorization
 
 from .models import Topic, Message
 
@@ -15,8 +16,10 @@ class AuthorResource(ModelResource):
 
 class TopicResource(ModelResource):
     class Meta:
+        allowed_methods = ['get', 'post', 'put', 'delete', 'patch']
         queryset = Topic.objects.all()
         resource_name = 'djparakeet/topic'
+        authorization = DjangoAuthorization()
 
 class MessageResource(ModelResource):
     author = fields.ForeignKey(AuthorResource, 'author', full=True)

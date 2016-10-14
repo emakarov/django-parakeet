@@ -65,5 +65,20 @@ def ws_message(message):
            'message': data_json
         }
         group_send('topic_message', data_to_send)
-    if data['kind'] == 'ping':
+    elif data['kind'] == 'topic_create':
+        print( 'topic_create', data)
+        t = Topic.objects.create(
+            name=data['msg']['name'],
+            is_public=data['msg']['is_public']
+        )
+        tr = TopicResource()
+        bundle = tr.build_bundle(obj=t)
+        data_bundle = tr.full_dehydrate(bundle)
+        data_json = tr.serialize(None, data_bundle, 'application/json')
+        data_to_send = {
+            'topic_id': 0,
+            'message': data_json
+        }
+        group_send('topic_change', data_to_send)
+    elif data['kind'] == 'ping':
         group_send('ping', message.user.username)

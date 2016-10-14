@@ -14,7 +14,7 @@ var settings = {}
 var PSocket = require('./parakeet-socket.js');
 
 app.socket = PSocket({
-    uri: "ws://" + window.location.host + "/chat/?session_key="+window.django.session_key,
+    uri: "ws://" + window.location.host + "/chat/?session_key=" + window.django.session_key,
     onmessage: function(data) {
         console.log('received from ws clean', data);
         var json_data = JSON.parse(data);
@@ -25,6 +25,15 @@ app.socket = PSocket({
             var t = app.collections['topics'].where({id: json_data.data.topic_id})[0];
             t.connectedCollection.addToBottom(m);
            // t.connectedCollection.trigger('postRender');
+        }
+        if (json_data.kind == "topic_change"){
+            var m = JSON.parse(json_data.data.message);
+            var apt = app.collections['topics'];
+            if (apt.where({id: m.id})>0) {
+                apt.where({id: m.id})[0].set(m);
+            } else {
+                app.collections['topics'].add(m);
+            }
         }
     },
     onopen: function(data){
@@ -119,6 +128,14 @@ $(document).ready( function() {
   $("#add_channel_button").on('click', function() {
     $("#add_channel_modal").modal();
   });
+});
+
+$("#create_channel_btn").click( function() {
+    var data = {
+       kind: 'topic_create',
+       msg: {name: $("#create_channel_name").val(), is_public: true}
+    }
+    app.socket.send(data);
 });
 
 app.settings = settings;

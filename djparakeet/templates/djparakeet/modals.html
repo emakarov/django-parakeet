@@ -7,11 +7,11 @@
         <h4 class="modal-title">{% trans "Create a channel" %}</h4>
       </div>
       <div class="modal-body">
-        <input class="form-control text-enter-field-js" type="text" placeholder="{% trans "Please fill a channel name" %}">
+        <input id="create_channel_name" class="form-control text-enter-field-js" type="text" placeholder="{% trans "Please fill a channel name" %}">
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
-        <button type="button" class="btn btn-primary">{% trans "Create channel" %}</button>
+        <button type="button" class="btn btn-primary" id="create_channel_btn">{% trans "Create channel" %}</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
