@@ -1,0 +1,6 @@
+{
+  "name": "Django-parakeet",
+  "tagline": "Simple chat application for django. Inspired by ideas from slack. Built as experiment with django-channels and django-tastypie.",
+  "body": "### Ideas of the project.\r\nThis application is built as experiment of using django-channels for websocket-based chat application in django.\r\nFrontend is written with backbonejs, handlebars, browserify and bootstrap\r\n\r\n### Some screenshots:\r\n![Screenshot 1](https://raw.githubusercontent.com/emakarov/django-parakeet/master/djparakeet/static/pagescontent/screenshot1.png)\r\n![Screenshot 2](https://raw.githubusercontent.com/emakarov/django-parakeet/master/djparakeet/static/pagescontent/screenshot2.png)\r\n\r\n### How to use\r\n- Install from git repository\r\n- Migrate application djparakeet\r\n- Add privileges to users (to read/edit/delete djparakeet Topic and Message)\r\n- Add to urls:   \r\n`    \r\nurl(r'^parakeet/', include('djparakeet.urls')),\r\n`\r\n- Navigate to /parakeet/\r\n\r\n### Roadmap\r\n- better documentation\r\n- private channels\r\n- channels-groups of users\r\n- packaging for pip\r\n- search\r\n- image upload\r\n\r\n### Authors and Contributors\r\nhttp://github.com/emakarov",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
