@@ -18,6 +18,10 @@ setup(
     url='https://emakarov.github.io/django-parakeet/',
     author='Evgeni Makarov',
     author_email='evgeni.makarov@gmail.com',
+    install_requires=[
+        'channels',
+        'django-tastypie',
+    ],
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
