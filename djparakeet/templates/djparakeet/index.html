@@ -25,6 +25,7 @@
 <script>
   window.django = {};
   window.django.session_key = "{{ request.session.session_key }}";
+  window.django.user_id = {{ request.user.id }};
 </script>
 <script src="/static/js/bundle.js"></script>
 </body>

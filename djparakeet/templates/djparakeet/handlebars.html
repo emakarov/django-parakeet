@@ -16,13 +16,13 @@
        </div> 
     </div>
     <div class="inputform pd-15">
-      <input onkeydown="app.checkinputtext(this, event, {{id}})" class="form-control text-enter-field-js" type="text">
+      <input id="input_text_{{id}}" onkeydown="app.checkinputtext(this, event, {{id}})" class="form-control text-enter-field-js" type="text">
     </div>
   </div>
 </script>
 <script id="message_content" type="text/x-handlebars-template">
 <div class="col-xs-12 pd-l-20 pt-5">
-<div>{{id}}: <b>{{author.username}}</b></div>
+<div><b>{{author.username}}</b></div>
 <div>{{text}}</div>
 </div>
 </script>

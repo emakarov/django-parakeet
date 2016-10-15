@@ -22,11 +22,18 @@ app.socket = PSocket({
             var m = JSON.parse(json_data.data.message);
             console.log(m);
             console.log(json_data);
+            if (m.author.id == window.django.user_id) {
+                var top = m.topic.split("/");
+                var topic_id = top[top.length-2];
+                $("#input_text_"+topic_id).val("");
+            }
             var t = app.collections['topics'].where({id: json_data.data.topic_id})[0];
             t.connectedCollection.addToBottom(m);
            // t.connectedCollection.trigger('postRender');
         }
         if (json_data.kind == "topic_change"){
+            $("#create_channel_name").val("");
+            $("#add_channel_modal").modal('hide');
             var m = JSON.parse(json_data.data.message);
             var apt = app.collections['topics'];
             if (apt.where({id: m.id})>0) {
@@ -94,7 +101,7 @@ for (var i in settings.collections) {
     }))();
     app.collections[i] = collection;
     app.collections[i].views = {};
-    for (let v in cs.views) {
+    for (var v in cs.views) {
         app.collections[i].views[v] = new cs.views[v].grid(collection, cs.views[v].config)
     }
 }
@@ -104,7 +111,7 @@ app.collections['topics'].listenTo(app.collections['topics'], 'fetch_completed',
 })
 
 
-for (let i in app.collections){
+for (var i in app.collections){
     app.collections[i].fetch();
 }
 
