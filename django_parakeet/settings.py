@@ -132,4 +132,4 @@ CHANNEL_LAYERS = {
 }
 
 LOGIN_URL = '/admin/'
-
+PARAKEET_LOGIN_URL = '/parakeet/login/'

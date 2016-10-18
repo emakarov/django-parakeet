@@ -1,0 +1,26 @@
+{% load i18n %}
+<html>
+<head>
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+<link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+<div class="col-xs-12 mg-t-200">
+  <form action="{% url 'parakeet_login' %}" method=POST class="col-xs-8 col-md-2 col-xs-offset-2 col-md-offset-5 form-horizontal">
+  {% csrf_token %}
+  <div class="form-group">
+    <label for="inputEmail">{% trans "Email or username" %}</label>
+    <input class="form-control" name="email" type="text" id="inputEmail" placeholder="Email or login">
+  </div>
+  <div class="form-group">
+    <label for="inputPassword">{% trans "Password" %}</label>
+    <input class="form-control" name="password" type="password" id="inputPassword" placeholder="Password">
+  </div>
+  <input name="next" type="hidden" value="{{next}}">
+  <div class="form-group">
+  <button type="submit" class="btn btn-default">{% trans "Sign in" %}</button>
+  </div>
+</form>
+</div>
+</body>
+</html>
