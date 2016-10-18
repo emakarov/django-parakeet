@@ -1,22 +1,22 @@
 var Backbone = require('backbone');
 var $ = require('jquery');
-var moment   = require('moment');
+var moment = require('moment');
 var _ = require('underscore');
-var Handlebars = require('handlebars');
+var Handlebars = require('./handlebars-helpers.js');
 var inview     = require('./plugins/jquery.inview.js')
 
-    // Helper function from Backbone to get a value from a Backbone
-    // object as a property or as a function.
-    var getValue = function(object, prop) {
-        if ((object && object[prop]))
-            return _.isFunction(object[prop]) ? object[prop]() : object[prop];
-    };
+// Helper function from Backbone to get a value from a Backbone
+// object as a property or as a function.
+var getValue = function(object, prop) {
+    if ((object && object[prop]))
+        return _.isFunction(object[prop]) ? object[prop]() : object[prop];
+};
 
-    // Helper function from Backbone that raises error when a model's
-    // url cannot be determined.
-    var urlError = function() {
-        throw new Error('A "url" property or function must be specified');
-    };
+// Helper function from Backbone that raises error when a model's
+// url cannot be determined.
+var urlError = function() {
+    throw new Error('A "url" property or function must be specified');
+};
 
 
 var Parakeet = {

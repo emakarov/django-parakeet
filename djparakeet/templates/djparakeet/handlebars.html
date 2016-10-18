@@ -22,7 +22,7 @@
 </script>
 <script id="message_content" type="text/x-handlebars-template">
 <div class="col-xs-12 pd-l-20 pt-5">
-<div><b>{{author.username}}</b></div>
+<div><b>{{author.username}}</b> <span class="msg-ts">{{ moment created_at format="DD/MM/YY HH:mm:ss" }}</span></div>
 <div>{{text}}</div>
 </div>
 </script>
