@@ -43,15 +43,25 @@ Frontend is written with backbonejs, handlebars, browserify and bootstrap</p>
 <a id="how-to-use" class="anchor" href="#how-to-use" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How to use</h3>
 
 <ul>
-<li>Install from git repository</li>
+<li>pip install django-parakeet</li>
 <li>Migrate application djparakeet</li>
 <li>Add privileges to users (to read/edit/delete djparakeet Topic and Message)</li>
 <li>Add to urls:<br>
 <code>
 url(r'^parakeet/', include('djparakeet.urls')),
 </code>
+Create a routing file in a folder near your settings.py (see example in repo)
+<code>
+from channels.routing import route
+from channels import include
+
+channel_routing = [
+    include('djparakeet.routing.websocket_routing', path=r'^/chat/')
+]
+</code>
 </li>
 <li>Navigate to /parakeet/</li>
+<li>You can clone the whole repository to run the ready application and test it</li>
 </ul>
 
 <h3>
@@ -61,7 +71,6 @@ url(r'^parakeet/', include('djparakeet.urls')),
 <li>better documentation</li>
 <li>private channels</li>
 <li>channels-groups of users</li>
-<li>packaging for pip</li>
 <li>search</li>
 <li>image upload</li>
 </ul>
