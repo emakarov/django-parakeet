@@ -2,7 +2,7 @@ asgiref==0.14.0
 autobahn==0.16.0
 channels==0.17.2
 daphne==0.15.0
-Django==1.10.1
+Django==1.11.29
 django-extensions==1.7.4
 django-tastypie==0.13.3
 pep8==1.7.0
