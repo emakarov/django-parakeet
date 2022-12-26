@@ -11,5 +11,5 @@ python-mimeparse==1.5.2
 six==1.10.0
 Twisted==16.4.1
 txaio==2.5.1
-wheel==0.24.0
+wheel==0.38.1
 zope.interface==4.3.2
